@@ -76,6 +76,28 @@ $app = new App;
       background: #2e7d32;
     }
   </style>
+  <style>
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #receiptModal, #receiptModal * {
+        visibility: visible;
+      }
+      #receiptModal {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: none;
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+      }
+      .button {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -108,28 +130,191 @@ $app = new App;
   <div class="cart">
     <div>
       🛒 Items in Cart: <span id="cartCount">0</span>
+      <button class="button" onclick="toggleCartItems()">View Cart</button>
     </div>
     <button class="button" onclick="checkout()">Proceed to Checkout</button>
   </div>
+  
+  <!-- Cart Items Modal -->
+  <div id="cartItemsModal" style="display:none; position:fixed; bottom:60px; left:50%; transform:translateX(-50%);
+  background:#ffffff; border:1px solid #ccc; padding:20px; border-radius:10px; max-height:300px; overflow-y:auto; width:360px; box-shadow: 0 0 10px rgba(0,0,0,0.3); font-family: Arial, sans-serif;">
+  <h4 style="margin: 0 0 10px;">🛍️ You Ordered:</h4>
+  <div style="display: flex; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 5px;">
+    <div style="flex: 2;">Item</div>
+    <div style="flex: 1; text-align: center;">Qty</div>
+    <div style="flex: 0.5;"></div>
+  </div>
+  <div id="cartItemsList"></div>
+  <div id="cartTotal" style="text-align: right; font-weight: bold; margin-top: 10px;">Total: ₱0.00</div>
+</div>
 
-  <script>
-    let cartCount = 0;
-
-    function addToCart(item) {
-      cartCount++;
-      document.getElementById("cartCount").innerText = cartCount;
-      alert(item + " added to cart!");
-    }
-
-    function checkout() {
-      if (cartCount > 0) {
-        alert("Thank you for your order! Please proceed to payment.");
-        cartCount = 0;
-        document.getElementById("cartCount").innerText = cartCount;
+<script>
+    let cartItems = JSON.parse(localStorage.getItem("cartItems")) || {};
+  
+    const productPrices = {
+      "Cheeseburger": 120,
+      "Fried Chicken": 150,
+      "Iced Tea": 50,
+      "Fries": 70
+    };
+  
+    function addToCart(itemName) {
+      const price = productPrices[itemName];
+      if (cartItems[itemName]) {
+        cartItems[itemName].quantity += 1;
       } else {
-        alert("Your cart is empty.");
+        cartItems[itemName] = { price: price, quantity: 1 };
+      }
+  
+      updateCartDisplay();
+      alert(`${itemName} (₱${price}) added to cart!`);
+    }
+  
+    function removeFromCart(itemName) {
+      delete cartItems[itemName];
+      updateCartDisplay();
+    }
+  
+    function changeQuantity(itemName, delta) {
+      if (cartItems[itemName]) {
+        cartItems[itemName].quantity += delta;
+        if (cartItems[itemName].quantity <= 0) {
+          removeFromCart(itemName);
+        }
+        updateCartDisplay();
       }
     }
+  
+    function checkout() {
+  if (Object.keys(cartItems).length > 0) {
+    showReceipt();
+    localStorage.removeItem("cartItems");
+    cartItems = {};
+    updateCartDisplay();
+    hideCartItems();
+  } else {
+    alert("Your cart is empty.");
+  }
+}
+  
+    function toggleCartItems() {
+      const modal = document.getElementById("cartItemsModal");
+      modal.style.display = (modal.style.display === "none") ? "block" : "none";
+    }
+  
+    function hideCartItems() {
+      document.getElementById("cartItemsModal").style.display = "none";
+    }
+  
+    function updateCartDisplay() {
+      const listContainer = document.getElementById("cartItemsList");
+      const totalEl = document.getElementById("cartTotal");
+      const countEl = document.getElementById("cartCount");
+  
+      listContainer.innerHTML = "";
+      let totalItems = 0;
+      let totalCost = 0;
+  
+      for (const [itemName, itemData] of Object.entries(cartItems)) {
+        const { price, quantity } = itemData;
+        const itemTotal = price * quantity;
+        totalItems += quantity;
+        totalCost += itemTotal;
+  
+        const row = document.createElement("div");
+        row.style.display = "flex";
+        row.style.alignItems = "center";
+        row.style.marginBottom = "8px";
+  
+        // Left - Item name and price
+        const nameDiv = document.createElement("div");
+        nameDiv.style.flex = "2";
+        nameDiv.textContent = `${itemName}: ₱${itemTotal.toFixed(2)}`;
+  
+        // Center - Quantity controls
+        const qtyDiv = document.createElement("div");
+        qtyDiv.style.flex = "1";
+        qtyDiv.style.textAlign = "center";
+        qtyDiv.innerHTML = `
+          <button onclick="changeQuantity('${itemName}', -1)" style="width:25px;">-</button>
+          <span style="margin: 0 8px;">${quantity}</span>
+          <button onclick="changeQuantity('${itemName}', 1)" style="width:25px;">+</button>
+        `;
+  
+        // Right - Remove button
+        const removeDiv = document.createElement("div");
+        removeDiv.style.flex = "0.5";
+        removeDiv.style.textAlign = "right";
+        removeDiv.innerHTML = `<button onclick="removeFromCart('${itemName}')" style="color:red;">🗑️</button>`;
+  
+        row.appendChild(nameDiv);
+        row.appendChild(qtyDiv);
+        row.appendChild(removeDiv);
+        listContainer.appendChild(row);
+
+        localStorage.setItem("cartItems", JSON.stringify(cartItems));
+      }
+  
+      countEl.innerText = totalItems;
+      totalEl.textContent = `Total: ₱${totalCost.toFixed(2)}`;
+    }
+    function showReceipt() {
+  const content = document.getElementById("receiptContent");
+  const totalEl = document.getElementById("receiptTotal");
+  const timeEl = document.getElementById("receiptTime");
+  let total = 0;
+
+  // Add date and time
+  const now = new Date();
+  const dateTimeString = now.toLocaleString("en-PH", {
+    weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: true
+  });
+  timeEl.textContent = dateTimeString;
+
+  // Build receipt items
+  content.innerHTML = "";
+  for (const [itemName, itemData] of Object.entries(cartItems)) {
+    const { price, quantity } = itemData;
+    const itemTotal = price * quantity;
+    total += itemTotal;
+
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.justifyContent = "space-between";
+    row.style.marginBottom = "5px";
+    row.innerHTML = `
+      <span>${itemName} x${quantity}</span>
+      <span>₱${itemTotal.toFixed(2)}</span>
+    `;
+    content.appendChild(row);
+  }
+
+  totalEl.textContent = `Total: ₱${total.toFixed(2)}`;
+  document.getElementById("receiptModal").style.display = "block";
+}
+
+
+function closeReceipt() {
+  document.getElementById("receiptModal").style.display = "none";
+}
   </script>
+  <div id="receiptModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  background:white; border:2px solid #ccc; border-radius:10px; width:350px; max-height:90vh; overflow-y:auto;
+  box-shadow:0 0 15px rgba(0,0,0,0.3); padding:20px; font-family:Arial, sans-serif; z-index:1000;">
+  
+  <h3 style="text-align:center;">🧾 Order Receipt</h3>
+<div id="receiptNumber" style="text-align:center; font-size: 0.9em; margin-bottom: 5px; color: #444;"></div>
+<div id="receiptTime" style="text-align:center; font-size: 0.9em; color: #555;"></div>
+
+  <div id="receiptContent" style="margin-top:15px;"></div>
+  <div id="receiptTotal" style="text-align:right; font-weight:bold; margin-top:10px;"></div>
+
+  <div style="text-align:center; margin-top:15px;">
+    <button onclick="window.print()" class="button" style="margin-right:10px;">🖨️ Print Receipt</button>
+    <button onclick="closeReceipt()" class="button">Close</button>
+  </div>
+</div>
 </body>
 </html>
