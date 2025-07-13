@@ -43,6 +43,19 @@
       90% { opacity: 1; }
       100% { opacity: 0; transform: translateY(20px); }
     }
+    .custom-scroll::-webkit-scrollbar {
+        width: 8px;
+      }
+      .custom-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 8px;
+      }
+      .custom-scroll:hover::-webkit-scrollbar-thumb {
+        background-color: #999;
+      }
   </style>
 </head>
 <body class="bg-orange-50 min-h-screen" x-data="app" x-init="loadCart()">
@@ -83,7 +96,12 @@
 
     <!-- Footer Bar -->
     <footer class="fixed bottom-0 left-48 right-0 bg-white dark:bg-gray-800 shadow-inner p-4 border-t flex justify-end space-x-4 z-50">
-      <button @click="resetCart()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Start over</button>
+      <button
+        @click="confirmReset = true"
+        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+      >
+        Start over
+      </button>
       <button @click="viewOrder()" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">View order - ₱<span x-text="total.toFixed(2)">0.00</span></button>
     </footer>
   </div>
@@ -111,15 +129,30 @@
                       </label>
                     </div>
                   </div>
-                  <div class="mb-6 text-left">
+                  <div class="mb-6 text-left relative">
   <h3 class="text-md font-bold mb-2 text-gray-800 dark:text-white">Order Summary:</h3>
-  <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-    <template x-for="item in cart" :key="item.name">
-      <li>
-        <span x-text="item.name"></span> × <span x-text="item.qty"></span> — ₱<span x-text="(item.price * item.qty).toFixed(2)"></span>
-      </li>
-    </template>
-  </ul>
+  
+  <!-- Scrollable Order Summary -->
+  <div id="summary-scroll" class="max-h-[200px] overflow-y-auto pr-2 custom-scroll space-y-1 border rounded p-2">
+    <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+      <template x-for="item in cart" :key="item.name">
+        <li>
+          <span x-text="item.name"></span> × <span x-text="item.qty"></span> — ₱<span x-text="(item.price * item.qty).toFixed(2)"></span>
+        </li>
+      </template>
+    </ul>
+  </div>
+
+  <!-- Scroll down arrow -->
+  <button
+    x-show="cart.length > 3"
+    @click="$nextTick(() => document.getElementById('summary-scroll').scrollTo({ top: 9999, behavior: 'smooth' }))"
+    class="absolute bottom-0 right-2 bg-white bg-opacity-80 hover:bg-opacity-100 text-gray-500 hover:text-gray-800 rounded-full p-1 shadow-md transition"
+    title="Scroll to bottom"
+  >
+    ↓
+  </button>
+
   <div class="mt-3 font-semibold">
     Total: ₱<span x-text="total.toFixed(2)"></span>
   </div>
@@ -143,39 +176,60 @@
       </template>
 
       <template x-if="!checkout">
-        <div>
-          <h2 class="text-2xl font-bold text-red-600 mb-4 text-center">Your Order</h2>
-          <template x-if="cart.length === 0">
-            <p class="text-center text-gray-500 dark:text-gray-300">Your cart is empty.</p>
-          </template>
-          <div class='space-y-2' x-show="cart.length > 0">
+  <div>
+    <div class="max-h-[80vh] overflow-y-auto pr-1 custom-scroll">
+      <h2 class="text-2xl font-bold text-red-600 mb-4 text-center">Your Order</h2>
+
+      <template x-if="cart.length === 0">
+        <p class="text-center text-gray-500 dark:text-gray-300">Your cart is empty.</p>
+      </template>
+
+      <div class='space-y-2' x-show="cart.length > 0">
+        <div class="relative">
+          <div id="cart-scroll" class="space-y-2 max-h-[50vh] overflow-y-auto pr-2 custom-scroll">
             <template x-for="(item, index) in cart" :key="index">
-              <div class='flex justify-between items-center py-2 border-b'>
+              <div class="flex justify-between items-center py-2 border-b">
                 <div>
-                  <p class='font-semibold' x-text="item.name"></p>
-                  <div class='flex items-center space-x-2 mt-1'>
-                    <button @click="changeQty(index, -1)" class='px-2 bg-gray-200 rounded'>−</button>
-                    <span x-text="item.qty"></span>
-                    <button @click="changeQty(index, 1)" class='px-2 bg-gray-200 rounded'>+</button>
+                  <p class="font-medium text-gray-800 dark:text-white" x-text="item.name"></p>
+                  <div class="text-sm text-gray-500 dark:text-gray-300">
+                    ₱<span x-text="item.price.toFixed(2)"></span> × <span x-text="item.qty"></span>
                   </div>
                 </div>
-                <div class='text-right'>
-                  <p class='text-gray-700'>₱<span x-text="(item.price * item.qty).toFixed(2)"></span></p>
-                  <button @click="removeItem(index)" class='text-xs text-red-500 hover:underline'>Remove</button>
+                <div class="flex items-center space-x-2">
+                  <button @click="changeQty(index, -1)" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-2 rounded">−</button>
+                  <span x-text="item.qty"></span>
+                  <button @click="changeQty(index, 1)" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-2 rounded">+</button>
+                  <button @click="removeItem(index)" class="text-red-500 hover:text-red-700 ml-2">✕</button>
                 </div>
               </div>
             </template>
           </div>
-          <div class='flex justify-between mt-6 text-lg font-semibold text-gray-800 border-t pt-4'>
-            <span>Total</span>
-            <span>₱<span x-text="total.toFixed(2)"></span></span>
-          </div>
-          <div class='mt-6 flex justify-center space-x-4'>
-            <button @click="showModal = false" class='px-5 py-2 bg-gray-300 rounded hover:bg-gray-400'>Back to Menu</button>
-            <button @click="checkout = true" class='px-5 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600'>Proceed to Checkout</button>
-          </div>
+
+          <!-- Scroll-down arrow -->
+          <button
+            x-show="cart.length > 3"
+            @click="$nextTick(() => document.getElementById('cart-scroll').scrollTo({ top: 9999, behavior: 'smooth' }))"
+            class="absolute bottom-0 right-2 bg-white bg-opacity-80 hover:bg-opacity-100 text-gray-500 hover:text-gray-800 rounded-full p-1 shadow-md transition"
+            title="Scroll to bottom"
+          >
+            ↓
+          </button>
         </div>
-      </template>
+      </div>
+
+      <div class='flex justify-between mt-6 text-lg font-semibold text-gray-800 border-t pt-4'>
+        <span>Total</span>
+        <span>₱<span x-text="total.toFixed(2)"></span></span>
+      </div>
+    </div>
+
+    <!-- ✅ FIXED button row -->
+    <div class='mt-6 flex justify-center space-x-4'>
+      <button @click="showModal = false" class='px-5 py-2 bg-gray-300 rounded hover:bg-gray-400'>Back to Menu</button>
+      <button @click="checkout = true" class='px-5 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600'>Proceed to Checkout</button>
+    </div>
+  </div>
+</template>
     </div>
   </div>
 
@@ -184,6 +238,7 @@
   <script>
     document.addEventListener('alpine:init', () => {
       Alpine.data('app', () => ({
+        confirmReset: false,
         orderType: '',
         showReceipt: false,
         receiptData: null,
@@ -292,7 +347,7 @@
   </script>
   <!-- Receipt Modal -->
 <div x-show="showReceipt" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-  <div class="w-full max-w-md bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl">
+  <div class="w-full max-w-md bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scroll">
     <h2 class="text-xl font-bold text-center mb-4 text-green-600">Thank You for Ordering!</h2>
 
     <template x-if="receiptData">
@@ -308,13 +363,27 @@
         <p class="text-sm text-gray-700 dark:text-gray-300 mb-2"><strong>Order Type:</strong> <span x-text="receiptData.orderType"></span></p>
         <p class="text-sm text-gray-700 dark:text-gray-300 mb-4"><strong>Payment Method:</strong> <span x-text="receiptData.paymentMethod"></span></p>
 
-        <ul class="text-sm mb-4 border-t pt-2 space-y-1 text-gray-800 dark:text-gray-200">
-          <template x-for="item in receiptData.cart" :key="item.name">
-            <li>
-              <span x-text="item.name"></span> × <span x-text="item.qty"></span> — ₱<span x-text="(item.price * item.qty).toFixed(2)"></span>
-            </li>
-          </template>
-        </ul>
+        <div class="relative">
+  <div id="receipt-scroll" class="max-h-[200px] overflow-y-auto pr-2 custom-scroll border-t pt-2 space-y-1 text-sm mb-4 text-gray-800 dark:text-gray-200">
+    <ul class="space-y-1">
+      <template x-for="item in receiptData.cart" :key="item.name">
+        <li>
+          <span x-text="item.name"></span> × <span x-text="item.qty"></span> — ₱<span x-text="(item.price * item.qty).toFixed(2)"></span>
+        </li>
+      </template>
+    </ul>
+  </div>
+
+  <!-- Scroll-down arrow -->
+  <button
+    x-show="receiptData.cart.length > 3"
+    @click="$nextTick(() => document.getElementById('receipt-scroll').scrollTo({ top: 9999, behavior: 'smooth' }))"
+    class="absolute bottom-1 right-2 bg-white bg-opacity-80 hover:bg-opacity-100 text-gray-500 hover:text-gray-800 rounded-full p-1 shadow-md transition"
+    title="Scroll to bottom"
+  >
+    ↓
+  </button>
+</div>
 
         <div class="text-lg font-semibold text-right">
           Total: ₱<span x-text="receiptData.total"></span>
@@ -328,6 +397,16 @@
     </template>
   </div>
 </div>
+  </div>
+</div>
+<div x-show="confirmReset" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm text-center">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Are you sure?</h2>
+    <p class="text-gray-600 mb-6">This will clear your current order and start over.</p>
+    <div class="flex justify-center gap-4">
+      <button @click="resetCart(); confirmReset = false" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Yes, Start Over</button>
+      <button @click="confirmReset = false" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+    </div>
   </div>
 </div>
 </body>
