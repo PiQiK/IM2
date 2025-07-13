@@ -51,14 +51,12 @@
     <aside class="w-48 bg-white shadow-xl p-4 space-y-6 fixed top-0 bottom-0 left-0 dark:bg-gray-800">
       <div class="text-center font-bold text-2xl text-orange-500 tracking-wide">QUICKBITE</div>
       <ul class="space-y-2 text-gray-700 dark:text-gray-200">
-        <li class="cursor-pointer" @click="category = '⭐️ Specialties'">⭐️ Specialties</li>
-        <li class="cursor-pointer font-bold text-red-600" @click="category = '🔥 Ultimate Specialties'">🔥 Ultimate</li>
-        <li class="cursor-pointer" @click="category = '🍽️ Side Orders'">🍽️ Side Orders</li>
-        <li class="cursor-pointer" @click="category = '🥖 Fresh Homemade Bread'">🥖 Fresh Bread</li>
-        <li class="cursor-pointer" @click="category = '🥪 Sandwiches'">🥪 Sandwiches</li>
-        <li class="cursor-pointer" @click="category = '🥤 Softdrinks'">🥤 Softdrinks</li>
-        <li class="cursor-pointer" @click="category = '🍺 Alcoholic Drinks'">🍺 Alcoholic Drinks</li>
-        <li class="cursor-pointer" @click="category = '🧃 Other Drinks'">🧃 Other Drinks</li>
+        <li class="cursor-pointer font-bold text-orange-500" @click="category = '🍽️ All-Day Breakfast'">🍽️ All-Day Breakfast</li>
+        <li class="cursor-pointer font-bold text-red-600" @click="category = '🍛 Rice Meals'">🍛 Rice Meals</li>
+        <li class="cursor-pointer font-bold text-yellow-600" @click="category = '🥖 Homemade Pandesal'">🥖 Pandesal</li>
+        <li class="cursor-pointer font-bold text-green-600" @click="category = '⭐️ Specials'">⭐️ Specials</li>
+        <li class="cursor-pointer font-bold text-violet-600" @click="category = '➕ Add-Ons'">➕ Add-Ons</li>
+        <li class="cursor-pointer font-bold text-amber-700" @click="category = '☕ Beverages'">☕ Beverages</li>
       </ul>
       <div class="pt-6">
         <label class="flex items-center space-x-2 cursor-pointer">
@@ -148,49 +146,32 @@
     document.addEventListener('alpine:init', () => {
       Alpine.data('app', () => ({
         search: '',
-        category: '🔥 Ultimate Specialties',
+        category: '⭐️ Specials',
         showModal: false,
         checkout: false,
         customerName: '',
         customerEmail: '',
         cart: [],
         items: [
-          { name: 'Ultimate Beef Pares', price: 139, img: 'https://source.unsplash.com/300x200/?big-beef,burger', category: '🔥 Ultimate Specialties' },
-          { name: 'Ultimate Pork Paksiw', price: 139, img: 'https://source.unsplash.com/300x200/?classic,burger', category: '🔥 Ultimate Specialties' },
-          { name: 'Ultimate Fried Chix Alamaks', price: 139, img: 'https://source.unsplash.com/300x200/?old-school,burger', category: '🔥 Ultimate Specialties' },
-          { name: 'Ultimate Burger Steak', price: 139, img: 'https://source.unsplash.com/300x200/?juicy,burger', category: '🔥 Ultimate Specialties' },
-          { name: 'Ultimate Pork Cutlet', price: 179, img: 'https://source.unsplash.com/300x200/?grill,burger', category: '🔥 Ultimate Specialties' },
-          { name: 'Beef Pares', price: 99, img: 'https://source.unsplash.com/300x200/?fries', category: '⭐️ Specialties' },
-          { name: 'Pork Paksiw', price: 99, img: 'https://source.unsplash.com/300x200/?fries', category: '⭐️ Specialties' },
-          { name: 'Fried Chicken Alamaks', price: 99, img: 'https://source.unsplash.com/300x200/?fries', category: '⭐️ Specialties' },
-          { name: 'Burger Steak', price: 99, img: 'https://source.unsplash.com/300x200/?fries', category: '⭐️ Specialties' },
-          { name: 'Branded Pork Cutlet', price: 139, img: 'https://source.unsplash.com/300x200/?fries', category: '⭐️ Specialties' },
-          { name: 'Grilled Pork Teriyaki', price: 139, img: 'https://source.unsplash.com/300x200/?fries', category: '🍽️ Side Orders' },
-          { name: 'Fried Siomai (10 pcs)', price: 99, img: 'https://source.unsplash.com/300x200/?chicken', category: '🍽️ Side Orders' },
-          { name: 'Fried Lumpia (10 pcs)', price: 99, img: 'https://source.unsplash.com/300x200/?chicken', category: '🍽️ Side Orders' },
-          { name: 'Fried Egg', price: 15, img: 'https://source.unsplash.com/300x200/?chicken', category: '🍽️ Side Orders' },
-          { name: 'Garlic Rice', price: 15, img: 'https://source.unsplash.com/300x200/?chicken', category: '🍽️ Side Orders' },
-          { name: 'Buttered Pandesal', price: 8, img: 'https://source.unsplash.com/300x200/?chicken', category: '🥖 Fresh Homemade Bread' },
-          { name: 'Plain Pandesal', price: 7, img: 'https://source.unsplash.com/300x200/?chicken', category: '🥖 Fresh Homemade Bread' },
-          { name: 'Cheeseburger Deluxe', price: 149, img: 'https://source.unsplash.com/300x200/?chicken', category: '🥪 Sandwiches' },
-          { name: 'Hearty Tuna', price: 119, img: 'https://source.unsplash.com/300x200/?chicken', category: '🥪 Sandwiches' },
-          { name: 'Classic Ham & Cheese', price: 119, img: 'https://source.unsplash.com/300x200/?chicken', category: '🥪 Sandwiches' },
-          { name: '8 oz: Coke, Royal, Sparkle, Mountain Dew', price: 12, img: 'https://source.unsplash.com/300x200/?chicken', category: '🥤 Softdrinks' },
-          { name: 'Swakto: Coke Zero/Regular, Royal, Sprite', price: 13, img: 'https://source.unsplash.com/300x200/?chicken', category: '🥤 Softdrinks' },
-          { name: 'Litro: Coke, Royal, Sprite', price: 70, img: 'https://source.unsplash.com/300x200/?chicken', category: '🥤 Softdrinks' },
-          { name: '1.5L: Coke Regular, Sprite', price: 80, img: 'https://source.unsplash.com/300x200/?chicken', category: '🥤 Softdrinks' },
-          { name: 'Red Horse 500ml', price: 64, img: 'https://source.unsplash.com/300x200/?chicken', category: '🍺 Alcoholic Drinks' },
-          { name: 'Red Horse Litro', price: 130, img: 'https://source.unsplash.com/300x200/?chicken', category: '🍺 Alcoholic Drinks' },
-          { name: 'San Miguel Grande', price: 130, img: 'https://source.unsplash.com/300x200/?chicken', category: '🍺 Alcoholic Drinks' },
-          { name: 'San Miguel Pilsen', price: 45, img: 'https://source.unsplash.com/300x200/?chicken', category: '🍺 Alcoholic Drinks' },
-          { name: 'San Mig Light', price: 53, img: 'https://source.unsplash.com/300x200/?chicken', category: '🍺 Alcoholic Drinks' },
-          { name: 'Tanduay Ice', price: 45, img: 'https://source.unsplash.com/300x200/?chicken', category: '🍺 Alcoholic Drinks' },
-          { name: 'C2 Apple', price: 37, img: 'https://source.unsplash.com/300x200/?chicken', category: '🧃 Other Drinks' },
-          { name: 'Pineapple Juice', price: 35, img: 'https://source.unsplash.com/300x200/?chicken', category: '🧃 Other Drinks' },
-          { name: 'Gatorade', price: 50, img: 'https://source.unsplash.com/300x200/?chicken', category: '🧃 Other Drinks' },
-          { name: 'Nestea Apple 500ml', price: 33, img: 'https://source.unsplash.com/300x200/?chicken', category: '🧃 Other Drinks' },
-          { name: 'Mineral Water 500ml', price: 15, img: 'https://source.unsplash.com/300x200/?chicken', category: '🧃 Other Drinks' },
-          { name: 'Mineral Water 1L', price: 25, img: 'https://source.unsplash.com/300x200/?chicken', category: '🧃 Other Drinks' }
+          { name: 'Cheeseburger Deluxe', price: 150, img: 'cheese_burger.jpg', category: '⭐️ Specials' },
+          { name: 'Grilled Pork Teriyaki', price: 160, img: 'grilled_teriyaki.jpg', category: '⭐️ Specials' },
+          { name: 'Spam Rice', price: 150, img: 'Spam Rice.jpg', category: '🍽️ All-Day Breakfast' },
+          { name: 'New York Hotdog', price: 140, img: 'newyork_hotdog.jpg', category: '🍽️ All-Day Breakfast' },
+          { name: 'Chorizo Rice', price: 150, img: 'Chorizo Rice.jpg', category: '🍽️ All-Day Breakfast' },
+          { name: 'Burger Steak Rice', price: 120, img: 'burger_steak.jpg', category: '🍛 Rice Meals' },
+          { name: 'Beef Pares Rice', price: 120, img: 'pares.jpg', category: '🍛 Rice Meals' },
+          { name: 'Chicken Katsu Rice', price: 110, img: 'chicken_katsu.jpg', category: '🍛 Rice Meals' },
+          { name: 'Hungarian Rice', price: 130, img: 'Hungarian Rice.jpg', category: '🍛 Rice Meals' },
+          { name: 'Beef Shawarma Rice', price: 110, img: 'Beef Shawarma Rice.jpg', category: '🍛 Rice Meals' },
+          { name: 'Braised Pork Rice', price: 120, img: 'Braised Pork Rice.jpg', category: '🍛 Rice Meals' },
+          { name: 'Sisig Rice', price: 120, img: 'sisig.jpg', category: '🍛 Rice Meals' },
+          { name: 'Buttered Pandesal', price: 8, img: 'Buttered Pandesal.jpg', category: '🥖 Homemade Pandesal' },
+          { name: 'Regular Pandesal', price: 7, img: 'Regular Pandesal.jpg', category: '🥖 Homemade Pandesal' },
+          { name: 'Extra Rice', price: 25, img: 'Extra Rice.jpg', category: '➕ Add-Ons' },
+          { name: 'Extra Egg', price: 20, img: 'Extra Egg.jpg', category: '➕ Add-Ons' },
+          { name: 'Siomai (per piece)', price: 10, img: 'Siomai.jpg', category: '➕ Add-Ons' },
+          { name: 'Pork Lumpia', price: 10, img: 'Pork Lumpia.jpg', category: '➕ Add-Ons' },
+          { name: 'Brewed Coffee', price: 50, img: 'coffee.jpg', category: '☕ Beverages' }
         ],
         get filteredItems() {
           return this.items.filter(i => i.category === this.category && i.name.toLowerCase().includes(this.search.toLowerCase()));
@@ -203,7 +184,7 @@
           if (index > -1) this.cart[index].qty++;
           else this.cart.push({ name, price, qty: 1 });
           this.saveCart();
-          this.showToast(`₱{name} added to cart`);
+          this.showToast(`${name} added to cart`);
         },
         removeItem(index) {
           this.cart.splice(index, 1);
@@ -254,5 +235,6 @@
   </script>
 </body>
 </html>
+
 
 
