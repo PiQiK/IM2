@@ -58,10 +58,6 @@
         <li class="cursor-pointer font-bold text-violet-600" @click="category = '➕ Add-Ons'">➕ Add-Ons</li>
         <li class="cursor-pointer font-bold text-amber-700" @click="category = '☕ Beverages'">☕ Beverages</li>
       </ul>
-      <div class="pt-6">
-        <label class="flex items-center space-x-2 cursor-pointer">
-        </label>
-      </div>
     </aside>
 
     <!-- Main Content -->
@@ -97,12 +93,55 @@
     <div class="w-full max-w-md bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl">
       <template x-if="checkout">
         <div>
-          <h2 class="text-xl font-bold mb-4 text-center">Checkout</h2>
-          <input type="text" x-model="customerName" placeholder="Your name" class="w-full p-2 mb-4 border rounded">
-          <input type="email" x-model="customerEmail" placeholder="Email" class="w-full p-2 mb-4 border rounded">
-          <button @click="submitOrder()" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Submit Order</button>
+          <!-- Step 2: Payment -->
+          <template x-if="step === 2">
+            <div>
+              <h2 class="text-xl font-bold mb-4 text-center">Finalize Your Order</h2>
+                  <!-- Order Type: Dine In or Take Out -->
+                  <div class="mb-6 text-center">
+                    <span class="font-semibold text-gray-700 dark:text-gray-200">Order Type:</span>
+                    <div class="flex justify-center mt-2 space-x-4">
+                      <label class="flex items-center space-x-2">
+                        <input type="radio" x-model="orderType" value="Dine In" class="accent-yellow-500">
+                        <span class="text-gray-700 dark:text-gray-200">Dine In</span>
+                      </label>
+                      <label class="flex items-center space-x-2">
+                        <input type="radio" x-model="orderType" value="Take Out" class="accent-yellow-500">
+                        <span class="text-gray-700 dark:text-gray-200">Take Out</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="mb-6 text-left">
+  <h3 class="text-md font-bold mb-2 text-gray-800 dark:text-white">Order Summary:</h3>
+  <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+    <template x-for="item in cart" :key="item.name">
+      <li>
+        <span x-text="item.name"></span> × <span x-text="item.qty"></span> — ₱<span x-text="(item.price * item.qty).toFixed(2)"></span>
+      </li>
+    </template>
+  </ul>
+  <div class="mt-3 font-semibold">
+    Total: ₱<span x-text="total.toFixed(2)"></span>
+  </div>
+</div>
+
+                  <!-- Payment Method -->
+                    <div class="mb-6 text-center">
+                      <span class="font-semibold text-gray-700 dark:text-gray-200">How would you like to pay?</span>
+                      <div class="flex flex-col space-y-4 mt-4">
+                        <button @click="selectPayment('GCash')" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">GCash</button>
+                        <button @click="selectPayment('Cash')" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Cash</button>
+                      </div>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                      <button @click="showModal = false" class="text-sm text-gray-500 hover:underline">← Back to Order</button>
+                    </div>
+                  </div>
+                </template>
         </div>
       </template>
+
       <template x-if="!checkout">
         <div>
           <h2 class="text-2xl font-bold text-red-600 mb-4 text-center">Your Order</h2>
@@ -145,12 +184,14 @@
   <script>
     document.addEventListener('alpine:init', () => {
       Alpine.data('app', () => ({
+        orderType: '',
+        showReceipt: false,
+        receiptData: null,
         search: '',
         category: '⭐️ Specials',
         showModal: false,
         checkout: false,
-        customerName: '',
-        customerEmail: '',
+        step: 1,
         cart: [],
         items: [
           { name: 'Cheeseburger Deluxe', price: 150, img: 'cheese_burger.jpg', category: '⭐️ Specials' },
@@ -197,6 +238,7 @@
         },
         viewOrder() {
           this.checkout = false;
+          this.step = 2;
           this.showModal = true;
         },
         resetCart() {
@@ -218,23 +260,75 @@
           document.getElementById('toast-container').appendChild(toast);
           setTimeout(() => toast.remove(), 3000);
         },
-        submitOrder() {
-          if (!this.customerName || !this.customerEmail) {
-            alert("Please complete your information.");
-            return;
-          }
-          this.resetCart();
-          this.customerName = '';
-          this.customerEmail = '';
-          this.showModal = true;
-          this.checkout = false;
-          this.showToast("Thank you for your order!");
+        selectPayment(method) {
+  // ✅ Safeguard the check
+        if (!this.orderType || this.orderType === '') {
+          alert("Please select Dine In or Take Out.");
+          return;
         }
+
+        const orderNumber = 'QB' + Math.floor(100000 + Math.random() * 900000);
+
+        this.receiptData = {
+          cart: [...this.cart],
+          orderType: this.orderType,
+          paymentMethod: method,
+          total: this.total.toFixed(2),
+          timestamp: new Date().toLocaleString(),
+          orderNumber: orderNumber,
+        };
+
+        this.showModal = false;
+        this.showReceipt = true;
+
+        // Reset after storing orderType
+        this.resetCart();
+        this.orderType = '';
+        this.checkout = false;
+        this.step = 1;
+      }
       }));
     });
   </script>
+  <!-- Receipt Modal -->
+<div x-show="showReceipt" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+  <div class="w-full max-w-md bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl">
+    <h2 class="text-xl font-bold text-center mb-4 text-green-600">Thank You for Ordering!</h2>
+
+    <template x-if="receiptData">
+      <div>
+        <p class="text-center text-sm text-gray-700 dark:text-gray-300 mb-2">
+          Your order number is <span class="font-bold" x-text="receiptData.orderNumber"></span>
+        </p>
+        <p class="text-center text-sm text-gray-700 dark:text-gray-300 mb-4">
+          Please proceed to the cashier.
+        </p>
+
+        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2"><strong>Date:</strong> <span x-text="receiptData.timestamp"></span></p>
+        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2"><strong>Order Type:</strong> <span x-text="receiptData.orderType"></span></p>
+        <p class="text-sm text-gray-700 dark:text-gray-300 mb-4"><strong>Payment Method:</strong> <span x-text="receiptData.paymentMethod"></span></p>
+
+        <ul class="text-sm mb-4 border-t pt-2 space-y-1 text-gray-800 dark:text-gray-200">
+          <template x-for="item in receiptData.cart" :key="item.name">
+            <li>
+              <span x-text="item.name"></span> × <span x-text="item.qty"></span> — ₱<span x-text="(item.price * item.qty).toFixed(2)"></span>
+            </li>
+          </template>
+        </ul>
+
+        <div class="text-lg font-semibold text-right">
+          Total: ₱<span x-text="receiptData.total"></span>
+        </div>
+
+        <div class="mt-6 text-center flex justify-between">
+          <button @click="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Print</button>
+          <button @click="showReceipt = false" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Close</button>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+  </div>
+</div>
 </body>
 </html>
-
-
-
