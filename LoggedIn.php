@@ -435,27 +435,23 @@ $applications = $stmt->get_result();
         this.generateReceipt(method);
         this.showReceipt = true;
         },
-      generateReceipt(method) {
-        const orderNumber = 'HE' + Math.floor(100000 + Math.random() * 900000);
+        generateReceipt(method) {
+  const orderNumber = 'HE' + Math.floor(100000 + Math.random() * 900000);
 
-        if (this.receiptData && method === 'GCash') {
-          this.receiptData.orderNumber = orderNumber;
-        } else {
-          this.receiptData = {
-            cart: [...this.cart],
-            orderType: this.orderType,
-            paymentMethod: method,
-            total: this.total.toFixed(2),
-            timestamp: new Date().toLocaleString(),
-            orderNumber: orderNumber,
-          };
-        }
+  this.receiptData = {
+    cart: [...this.cart],
+    orderType: this.orderType,
+    paymentMethod: method,
+    total: this.total.toFixed(2),
+    timestamp: new Date().toLocaleString(),
+    orderNumber: orderNumber,
+  };
 
-        this.resetCart();
-        this.orderType = '';
-        this.checkout = false;
-        this.step = 1;
-      },
+  this.resetCart();
+  this.orderType = '';
+  this.checkout = false;
+  this.step = 1;
+}
     }));
   });
 </script>
