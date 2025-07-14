@@ -1,5 +1,5 @@
 <?php
-include 'init.php';
+include 'connect.php';
 session_start();
 
 // Redirect to LoggedIn.php if the user is already logged in
