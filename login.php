@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signIn'])) {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Hidden Eats Kiosk</title>
+  <title>Sign In - Hidden Eats</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -98,49 +98,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signIn'])) {
       cursor: pointer;
       display: block;
       margin-top: 12px;
-    }
-    .hidden {
-      display: none;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
 
-  <div class="container" id="homeMenu">
-    <h1>🍜 Hidden Eats</h1>
-    <button onclick="showForm('signInForm')">Sign In</button>
-    <button onclick="showForm('signUpForm')">Sign Up</button>
-    <button onclick="alert('Welcome, Guest!')">Continue as Guest</button>
-  </div>
-
-  <div class="container hidden" id="signInForm">
+  <div class="container">
     <h1>Sign In</h1>
     <input type="text" placeholder="Username or Email" required>
     <input type="password" placeholder="Password" required>
     <button>Sign In</button>
-    <div class="link" onclick="showForm('homeMenu')">⬅ Back to Menu</div>
+    <a href="index.html" class="link">⬅ Back to Menu</a>
   </div>
-
-  <div class="container hidden" id="signUpForm">
-    <h1>Sign Up</h1>
-    <input type="text" placeholder="Full Name" required>
-    <input type="text" placeholder="Username" required>
-    <input type="email" placeholder="Email" required>
-    <input type="password" placeholder="Password" required>
-    <input type="text" placeholder="City / Location" required>
-    <button>Sign Up</button>
-    <div class="link" onclick="showForm('homeMenu')">⬅ Back to Menu</div>
-  </div>
-
-  <script>
-    function showForm(formId) {
-      const forms = ['homeMenu', 'signInForm', 'signUpForm'];
-      forms.forEach(id => {
-        document.getElementById(id).classList.add('hidden');
-      });
-      document.getElementById(formId).classList.remove('hidden');
-    }
-  </script>
 
 </body>
 </html>
