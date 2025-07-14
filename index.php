@@ -16,7 +16,7 @@
     <body>
     <nav>
         <div class="nav-logo">
-            <img src="../imgs/logo.png" alt="logo.png">
+            <img src="../IMGS/logo.png" alt="logo.png">
         </div>
         <div class="nav-cont">
             <li class="nav-list">
