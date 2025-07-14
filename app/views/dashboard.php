@@ -1,16 +1,139 @@
 <?php
+session_start();
+
+// Redirect to login page if the user is not logged in or session is invalid
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+include("connect.php");
+
+// Enable MySQLi error reporting for debugging
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+// Fetch user ID from session
+$user_id = $_SESSION['user_id'];
 
 
+// Handle form submissions for job actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    $action = $_POST['action'];
+    $job_id = isset($_POST['job_id']) ? intval($_POST['job_id']) : 0;
 
+    if ($action === 'complete') {
+        // Mark the job and its applications as 'completed'
+        $completeJobQuery = "
+            UPDATE applications 
+            SET status = 'completed' 
+            WHERE job_id = ? AND status = 'accepted'";
+        $stmt = $conn->prepare($completeJobQuery);
+        $stmt->bind_param("i", $job_id);
+        if ($stmt->execute()) {
+            $success_message = "Job marked as completed successfully!";
+        } else {
+            $error_message = "Failed to complete the job.";
+        }
+        $stmt->close();
+        // Redirect to avoid form resubmission
+        header("Location: loggedin.php");
+        exit();
+    } elseif ($action === 'delete') {
+        // First delete related applications
+        $deleteApplicationsQuery = "DELETE FROM applications WHERE job_id = ?";
+        $stmt = $conn->prepare($deleteApplicationsQuery);
+        $stmt->bind_param("i", $job_id);
+        $stmt->execute();
+        $stmt->close();
 
+        // Then delete the job itself
+        $deleteJobQuery = "DELETE FROM jobs WHERE id = ? AND user_id = ?";
+        $stmt = $conn->prepare($deleteJobQuery);
+        $stmt->bind_param("ii", $job_id, $user_id);
+        if ($stmt->execute()) {
+            $success_message = "Job deleted successfully!";
+        } else {
+            $error_message = "Failed to delete the job.";
+        }
+        $stmt->close();
 
+        // Redirect to avoid form resubmission
+        header("Location: loggedin.php");
+        exit();
+    }
+}
 
+// Fetch user details from the database using session data
+$query = "SELECT firstName, lastName, profile_picture, bio FROM users WHERE id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
+if ($result->num_rows === 0) {
+    session_destroy();
+    header("Location: login.php");
+    exit();
+}
 
+$user = $result->fetch_assoc();
+$firstName = htmlspecialchars($user['firstName']);
+$lastName = htmlspecialchars($user['lastName']);
+$profilePicture = htmlspecialchars($user['profile_picture']) ?: 'imgs/default-profile.png';
+$bio = htmlspecialchars($user['bio']);
+
+// Fetch jobs added by the logged-in user excluding completed jobs
+$jobsAddedQuery = "
+    SELECT 
+        j.id AS job_id, 
+        j.title, 
+        j.description, 
+        j.category,  -- Add this line to fetch the category
+        u.id AS employee_id, 
+        u.firstName, 
+        u.lastName, 
+        a.status 
+    FROM jobs j
+    LEFT JOIN applications a 
+        ON j.id = a.job_id 
+        AND a.status = 'accepted' 
+    LEFT JOIN users u 
+        ON a.user_id = u.id
+    WHERE j.user_id = ? AND j.id NOT IN (
+        SELECT job_id 
+        FROM applications 
+        WHERE status = 'completed'
+    )";
+$stmt = $conn->prepare($jobsAddedQuery);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$jobsAdded = $stmt->get_result();
+
+// Fetch ongoing jobs where the user is the employee
+$ongoingJobsQuery = "
+    SELECT j.id AS job_id, j.title, j.description, u.id AS employer_id, u.firstName, u.lastName 
+    FROM applications a
+    INNER JOIN jobs j ON a.job_id = j.id
+    INNER JOIN users u ON j.user_id = u.id
+    WHERE a.user_id = ? AND a.status = 'accepted'";
+$stmt = $conn->prepare($ongoingJobsQuery);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$ongoingJobs = $stmt->get_result();
+
+// Fetch pending applications for notifications
+$applicationsQuery = "
+    SELECT a.id AS application_id, a.status, u.firstName, u.lastName, u.bio, j.title 
+    FROM applications a
+    INNER JOIN jobs j ON a.job_id = j.id
+    INNER JOIN users u ON a.user_id = u.id
+    WHERE j.user_id = ? AND a.status = 'pending'
+";
+$stmt = $conn->prepare($applicationsQuery);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$applications = $stmt->get_result();
 ?>
-
-
-
 
 
 
