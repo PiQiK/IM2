@@ -147,39 +147,6 @@ $applications = $stmt->get_result();
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-  <style>
-    body { font-family: 'Raleway', sans-serif; }
-    .toast {
-      position: fixed;
-      bottom: 90px;
-      right: 20px;
-      background: #38a169;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 8px;
-      z-index: 100;
-      animation: fadeInOut 3s ease forwards;
-    }
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateY(20px); }
-      10% { opacity: 1; transform: translateY(0); }
-      90% { opacity: 1; }
-      100% { opacity: 0; transform: translateY(20px); }
-    }
-    .custom-scroll::-webkit-scrollbar {
-        width: 8px;
-      }
-      .custom-scroll::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      .custom-scroll::-webkit-scrollbar-thumb {
-        background-color: #ccc;
-        border-radius: 8px;
-      }
-      .custom-scroll:hover::-webkit-scrollbar-thumb {
-        background-color: #999;
-      }
-  </style>
 </head>
 <body class="bg-orange-50 min-h-screen" x-data="app" x-init="loadCart()">
   <div class="flex">
@@ -291,7 +258,7 @@ $applications = $stmt->get_result();
                     </div>
 
                     <div class="mt-6 text-center">
-                      <button @click="showModal = false" class="text-sm text-gray-500 hover:underline">← Back to Order</button>
+                        <button @click="checkout = false" class="text-sm text-gray-500 hover:underline">← Back to Order</button>
                     </div>
                   </div>
                 </template>
@@ -349,18 +316,25 @@ $applications = $stmt->get_result();
     <!-- ✅ FIXED button row -->
     <div class='mt-6 flex justify-center space-x-4'>
       <button @click="showModal = false" class='px-5 py-2 bg-gray-300 rounded hover:bg-gray-400'>Back to Menu</button>
-      <button @click="checkout = true" class='px-5 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600'>Proceed to Checkout</button>
-    </div>
-  </div>
-</template>
-    </div>
-  </div>
+      <button 
+        @click="checkout = true" 
+        :disabled="cart.length === 0"
+        class='px-5 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed'
+        >
+        Proceed to Checkout
+        </button>
+        </div>
+        </div>
+        </template>
+        </div>
+        </div>
 
   <div id="toast-container"></div>
 
   <script>
     document.addEventListener('alpine:init', () => {
       Alpine.data('app', () => ({
+        gcashPaid: false,
         confirmReset: false,
         orderType: '',
         showReceipt: false,
@@ -391,83 +365,100 @@ $applications = $stmt->get_result();
           { name: 'Siomai (per piece)', price: 10, img: 'Siomai.jpg', category: '➕ Add-Ons' },
           { name: 'Pork Lumpia', price: 10, img: 'Pork Lumpia.jpg', category: '➕ Add-Ons' },
           { name: 'Brewed Coffee', price: 50, img: 'coffee.jpg', category: '☕ Beverages' }
-        ],
-        get filteredItems() {
-          return this.items.filter(i => i.category === this.category && i.name.toLowerCase().includes(this.search.toLowerCase()));
-        },
-        get total() {
-          return this.cart.reduce((sum, i) => sum + i.price * i.qty, 0);
-        },
-        addToCart(name, price) {
-          const index = this.cart.findIndex(i => i.name === name);
-          if (index > -1) this.cart[index].qty++;
-          else this.cart.push({ name, price, qty: 1 });
-          this.saveCart();
-          this.showToast(`${name} added to cart`);
-        },
-        removeItem(index) {
-          this.cart.splice(index, 1);
-          this.saveCart();
-        },
-        changeQty(index, amount) {
-          this.cart[index].qty += amount;
-          if (this.cart[index].qty <= 0) this.removeItem(index);
-          this.saveCart();
-        },
-        viewOrder() {
-          this.checkout = false;
-          this.step = 2;
-          this.showModal = true;
-        },
-        resetCart() {
-          this.cart = [];
-          this.saveCart();
-          this.showModal = false;
-        },
-        saveCart() {
-          localStorage.setItem('cart', JSON.stringify(this.cart));
-        },
-        loadCart() {
-          const stored = localStorage.getItem('cart');
-          if (stored) this.cart = JSON.parse(stored);
-        },
-        showToast(msg) {
-          const toast = document.createElement('div');
-          toast.className = 'toast';
-          toast.innerText = msg;
-          document.getElementById('toast-container').appendChild(toast);
-          setTimeout(() => toast.remove(), 3000);
-        },
-        selectPayment(method) {
-  // ✅ Safeguard the check
-        if (!this.orderType || this.orderType === '') {
-          alert("Please select Dine In or Take Out.");
+          ],
+      get filteredItems() {
+        return this.items.filter(i => i.category === this.category && i.name.toLowerCase().includes(this.search.toLowerCase()));
+      },
+      get total() {
+        return this.cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+      },
+      addToCart(name, price) {
+        const index = this.cart.findIndex(i => i.name === name);
+        if (index > -1) this.cart[index].qty++;
+        else this.cart.push({ name, price, qty: 1 });
+        this.saveCart();
+        this.showToast(`${name} added to cart`);
+      },
+      removeItem(index) {
+        this.cart.splice(index, 1);
+        this.saveCart();
+      },
+      changeQty(index, amount) {
+        this.cart[index].qty += amount;
+        if (this.cart[index].qty <= 0) this.removeItem(index);
+        this.saveCart();
+      },
+      viewOrder() {
+        if (this.cart.length === 0) {
+          alert("Please add items to your cart before checking out.");
           return;
         }
-
-        const orderNumber = 'QB' + Math.floor(100000 + Math.random() * 900000);
-
-        this.receiptData = {
-          cart: [...this.cart],
-          orderType: this.orderType,
-          paymentMethod: method,
-          total: this.total.toFixed(2),
-          timestamp: new Date().toLocaleString(),
-          orderNumber: orderNumber,
-        };
-
+        this.checkout = false;
+        this.step = 2;
+        this.showModal = true;
+      },
+      resetCart() {
+        this.cart = [];
+        this.saveCart();
         this.showModal = false;
-        this.showReceipt = true;
+      },
+      saveCart() {
+        localStorage.setItem('cart', JSON.stringify(this.cart));
+      },
+      loadCart() {
+        const stored = localStorage.getItem('cart');
+        if (stored) this.cart = JSON.parse(stored);
+      },
+      showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerText = msg;
+        document.getElementById('toast-container').appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      },
+      selectPayment(method) {
+        if (!this.orderType) {
+            alert("Please select Dine In or Take Out.");
+            return;
+        }
 
-        // Reset after storing orderType
+        if (method === 'GCash') {
+            this.generateReceipt('GCash');  // ✅ Generate receipt
+            this.showReceipt = true;        // ✅ Show receipt modal
+            this.checkout = false;
+            this.step = 1;
+            this.showModal = false;
+            return;
+        }
+
+        // Cash fallback
+        this.generateReceipt(method);
+        this.showReceipt = true;
+        },
+      generateReceipt(method) {
+        const orderNumber = 'HE' + Math.floor(100000 + Math.random() * 900000);
+
+        if (this.receiptData && method === 'GCash') {
+          this.receiptData.orderNumber = orderNumber;
+        } else {
+          this.receiptData = {
+            cart: [...this.cart],
+            orderType: this.orderType,
+            paymentMethod: method,
+            total: this.total.toFixed(2),
+            timestamp: new Date().toLocaleString(),
+            orderNumber: orderNumber,
+          };
+        }
+
         this.resetCart();
         this.orderType = '';
         this.checkout = false;
         this.step = 1;
-      }
-      }));
-    });
-  </script>
+      },
+    }));
+  });
+</script>
   <!-- Receipt Modal -->
 <div x-show="showReceipt" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
   <div class="w-full max-w-md bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scroll">
@@ -479,9 +470,22 @@ $applications = $stmt->get_result();
           Your order number is <span class="font-bold" x-text="receiptData.orderNumber"></span>
         </p>
         <p class="text-center text-sm text-gray-700 dark:text-gray-300 mb-4">
-          Please proceed to the cashier.
-        </p>
-
+            <template x-if="receiptData.paymentMethod === 'Cash'">
+              <span>Please prepare a total of ₱<span x-text="receiptData.total"></span> in cash.</span>
+            </template>
+          </p>
+          <template x-if="receiptData.paymentMethod === 'GCash'">
+            <div class="text-center mt-4">
+              <p class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Scan the QR Code below to pay via GCash:</p>
+              <img src="gcash_qr.png" alt="GCash QR Code" class="mx-auto w-40 h-40 border rounded shadow-md">          
+            <!-- Confirm Payment Button -->
+            <template x-if="!gcashPaid">
+                <button @click="gcashPaid = true; generateReceipt('GCash')" class="mt-4 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                  I have paid
+                </button>
+              </template>
+            </div>
+          </template>          
         <p class="text-sm text-gray-700 dark:text-gray-300 mb-2"><strong>Date:</strong> <span x-text="receiptData.timestamp"></span></p>
         <p class="text-sm text-gray-700 dark:text-gray-300 mb-2"><strong>Order Type:</strong> <span x-text="receiptData.orderType"></span></p>
         <p class="text-sm text-gray-700 dark:text-gray-300 mb-4"><strong>Payment Method:</strong> <span x-text="receiptData.paymentMethod"></span></p>
@@ -534,4 +538,5 @@ $applications = $stmt->get_result();
 </div>
 </body>
 </html>
+
 
