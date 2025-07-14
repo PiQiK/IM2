@@ -20,7 +20,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QUICKBITE</title>
+  <title>HIDDEN EATS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
@@ -62,7 +62,7 @@
   <div class="flex">
     <!-- Sidebar -->
     <aside class="w-48 bg-white shadow-xl p-4 space-y-6 fixed top-0 bottom-0 left-0 dark:bg-gray-800">
-      <div class="text-center font-bold text-2xl text-orange-500 tracking-wide">QUICKBITE</div>
+      <div class="text-center font-bold text-2xl text-orange-500 tracking-wide">HIDDEN EATS</div>
       <ul class="space-y-2 text-gray-700 dark:text-gray-200">
         <li class="cursor-pointer font-bold text-orange-500" @click="category = '🍽️ All-Day Breakfast'">🍽️ All-Day Breakfast</li>
         <li class="cursor-pointer font-bold text-red-600" @click="category = '🍛 Rice Meals'">🍛 Rice Meals</li>
@@ -243,7 +243,7 @@
         showReceipt: false,
         receiptData: null,
         search: '',
-        category: '⭐️ Specials',
+        category: '🍛 Rice Meals',
         showModal: false,
         checkout: false,
         step: 1,
@@ -411,3 +411,4 @@
 </div>
 </body>
 </html>
+
