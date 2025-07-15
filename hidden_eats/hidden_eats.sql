@@ -28,10 +28,10 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `orders` (
-  `id` int(11) NOT NULL,
+  `id` int(11) AUTO_INCREMENT NOT NULL PRIMARY KEY,
   `customer_name` varchar(100) NOT NULL,
   `order_items` text NOT NULL,
-  `total_price` decimal(10,2) NOT NULL,
+  `total_price` int(20) NOT NULL,
   `order_type` enum('Dine In','Take Out') NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `order_status` varchar(20) NOT NULL DEFAULT 'Pending',

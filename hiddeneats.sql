@@ -86,3 +86,16 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+
+CREATE TABLE `orders` (
+  `id` int(11) AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  `customer_name` varchar(100) NOT NULL,
+  `order_items` text NOT NULL,
+  `total_price` int(20) NOT NULL,
+  `order_type` enum('Dine In','Take Out') NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `order_status` varchar(20) NOT NULL DEFAULT 'Pending',
+  `payment_status` varchar(20) DEFAULT 'Unpaid'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
