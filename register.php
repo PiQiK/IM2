@@ -1,5 +1,5 @@
 <?php
-include 'init.php';
+include 'connect.php';
 
 // Start the session
 session_start();
@@ -19,7 +19,7 @@ if (isset($_POST['signUp'])) {
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT); // Secure password hashing
 
     // Check if email exists
-    $checkEmailQuery = "SELECT id FROM users WHERE email = ?";
+    $checkEmailQuery = "SELECT user_id FROM users WHERE email = ?";
     $stmt = $conn->prepare($checkEmailQuery);
     $stmt->bind_param("s", $email);
     $stmt->execute();
