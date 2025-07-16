@@ -1,6 +1,39 @@
 <?php
 session_start();
 include 'connect.php';
+$where = [];
+$params = [];
+$types = '';
+
+if (!empty($_GET['status']) && $_GET['status'] !== 'all') {
+    $where[] = 'order_status = ?';
+    $params[] = $_GET['status'];
+    $types .= 's';
+}
+if (!empty($_GET['payment']) && $_GET['payment'] !== 'all') {
+    $where[] = 'payment_status = ?';
+    $params[] = $_GET['payment'];
+    $types .= 's';
+}
+if (!empty($_GET['date'])) {
+    $where[] = 'DATE(created_at) = ?';
+    $params[] = $_GET['date'];
+    $types .= 's';
+}
+
+$sql = "SELECT * FROM orders";
+if ($where) {
+    $sql .= " WHERE " . implode(" AND ", $where);
+}
+$sql .= " ORDER BY created_at DESC";
+
+$stmt = $conn->prepare($sql);
+if ($params) {
+    $stmt->bind_param($types, ...$params);
+}
+$stmt->execute();
+$result = $stmt->get_result();
+
 
 if (empty($_SESSION['user_id']) || empty($_SESSION['is_admin'])) {
     header("Location: index.php");
@@ -18,6 +51,11 @@ $result = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
+<nav class="admin-nav">
+  <a href="admin.php" class="<?= basename($_SERVER['PHP_SELF']) === 'admin.php' ? 'active' : '' ?>">Orders</a>
+  <a href="admin_menu.php" class="<?= basename($_SERVER['PHP_SELF']) === 'admin_menu.php' ? 'active' : '' ?>">Menu</a>
+</nav>
+
   <header class="admin-header">
     <h1>🛠 Hidden Eats – Admin Panel</h1>
     <div class="filters">
@@ -35,6 +73,9 @@ $result = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
           <option value="Paid">Paid</option>
         </select>
       </label>
+      <label>Date:
+    <input type="date" name="date" value="<?= htmlspecialchars($_GET['date'] ?? '') ?>" onchange="this.form.submit()" />
+  </label>
     </div>
   </header>
 
@@ -117,6 +158,29 @@ $result = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
 
     statusFilter.addEventListener('change', filterOrders);
     paymentFilter.addEventListener('change', filterOrders);
-  </script>
+    
+const orderTableBody = document.querySelector('#orderTable tbody');
+
+function fetchOrders() {
+  const status = document.getElementById('statusFilter').value;
+  const payment = document.getElementById('paymentFilter').value;
+  const date = document.querySelector('input[name="date"]').value;
+
+  const params = new URLSearchParams({ status, payment, date });
+
+  fetch('fetch_orders.php?' + params)
+    .then(res => res.text())
+    .then(html => {
+      orderTableBody.innerHTML = html;
+    });
+}
+
+// Initial fetch
+fetchOrders();
+
+// Poll every 15 seconds
+setInterval(fetchOrders, 15000);
+</script>
+
 </body>
 </html>

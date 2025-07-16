@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['signIn'])) {
   </div>
 
   <div class="container" id="signIn">
-    <h1 class="form-title">Sign In</h1>
+    <h1 class="form-title">Welcome to Hidden Eats</h1>
     <?php if (isset($_GET['error'])): ?>
       <p style="color: red; text-align: center;">
         <?= $_GET['error'] == 'username_exists' ? 'Username Already Exists!' : 'Invalid Username or Password.' ?>

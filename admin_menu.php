@@ -82,6 +82,11 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
   <link rel="stylesheet" href="CSS/admin_menu.css">
 </head>
 <body>
+<nav class="admin-nav">
+  <a href="admin.php" class="<?= basename($_SERVER['PHP_SELF']) === 'admin.php' ? 'active' : '' ?>">Orders</a>
+  <a href="admin_menu.php" class="<?= basename($_SERVER['PHP_SELF']) === 'admin_menu.php' ? 'active' : '' ?>">Menu</a>
+</nav>
+
   <h1>📝 Manage Menu</h1>
 
   <form method="POST" enctype="multipart/form-data" class="menu-form">
@@ -95,10 +100,10 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     <label>Category:
       <select name="category" required>
         <option value="">Select</option>
-        <option value="Specialties" <?= ($edit_item['food_category'] ?? '') === 'Specialties' ? 'selected' : '' ?>>Specialties</option>
-        <option value="Budget Bowls" <?= ($edit_item['food_category'] ?? '') === 'Budget Bowls' ? 'selected' : '' ?>>Budget Bowls</option>
-        <option value="Side Orders" <?= ($edit_item['food_category'] ?? '') === 'Side Orders' ? 'selected' : '' ?>>Side Orders</option>
-        <option value="Drinks" <?= ($edit_item['food_category'] ?? '') === 'Drinks' ? 'selected' : '' ?>>Drinks</option>
+        <option value="All-Day Breakfast" <?= ($edit_item['food_category'] ?? '') === 'All-Day Breakfast' ? 'selected' : '' ?>>All-Day Breakfast</option>
+        <option value="Rice Meals" <?= ($edit_item['food_category'] ?? '') === 'Rice Meals' ? 'selected' : '' ?>>Rice Meals</option>
+        <option value="Specials" <?= ($edit_item['food_category'] ?? '') === 'Side Orders' ? 'selected' : '' ?>>Specials</option>
+        <option value="Add-ons" <?= ($edit_item['food_category'] ?? '') === 'Add-ons' ? 'selected' : '' ?>>Add-ons</option>
       </select>
     </label>
 
