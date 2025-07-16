@@ -7,12 +7,19 @@ if (empty($_SESSION['user_id']) || empty($_SESSION['is_admin'])) {
     exit();
 }
 
-// Update status if POSTed
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order_id'])) {
-    $id = intval($_POST['complete_order_id']);
-    $stmt = $conn->prepare("UPDATE orders SET order_status = 'Completed' WHERE order_id = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
+// Update order status
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['complete_order_id'])) {
+        $id = intval($_POST['complete_order_id']);
+        $stmt = $conn->prepare("UPDATE orders SET order_status = 'Completed' WHERE order_id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+    } elseif (isset($_POST['mark_paid_order_id'])) {
+        $id = intval($_POST['mark_paid_order_id']);
+        $stmt = $conn->prepare("UPDATE orders SET payment_status = 'Paid' WHERE order_id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+    }
 }
 
 $stmt = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
@@ -36,6 +43,13 @@ $stmt = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
         <option value="Pending">Pending</option>
         <option value="Completed">Completed</option>
       </select>
+
+      <label for="filterPayment">Payment Status:</label>
+      <select id="filterPayment">
+        <option value="all">All</option>
+        <option value="Paid">Paid</option>
+        <option value="Unpaid">Unpaid</option>
+      </select>
     </div>
   </header>
 
@@ -50,12 +64,13 @@ $stmt = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
           <th>Type</th>
           <th>Payment</th>
           <th>Status</th>
+          <th>Paid?</th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody id="orderTable">
         <?php while ($row = $stmt->fetch_assoc()): ?>
-          <tr data-status="<?= $row['order_status'] ?>">
+          <tr data-status="<?= $row['order_status'] ?>" data-payment="<?= $row['payment_status'] ?>">
             <td><?= $row['order_id'] ?></td>
             <td><?= htmlspecialchars($row['customer_name']) ?></td>
             <td>
@@ -74,10 +89,22 @@ $stmt = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
               </span>
             </td>
             <td>
+              <span class="<?= $row['payment_status'] === 'Paid' ? 'status-completed' : 'status-pending' ?>">
+                <?= $row['payment_status'] ?>
+              </span>
+            </td>
+            <td>
               <?php if ($row['order_status'] !== 'Completed'): ?>
-              <form method="POST" action="admin.php">
+              <form method="POST" action="admin.php" style="margin-bottom: 0.3rem;">
                 <input type="hidden" name="complete_order_id" value="<?= $row['order_id'] ?>">
                 <button type="submit" class="complete-btn">Mark Completed</button>
+              </form>
+              <?php endif; ?>
+
+              <?php if ($row['payment_status'] !== 'Paid'): ?>
+              <form method="POST" action="admin.php">
+                <input type="hidden" name="mark_paid_order_id" value="<?= $row['order_id'] ?>">
+                <button type="submit" class="complete-btn" style="background-color:#28a745;">Mark Paid</button>
               </form>
               <?php endif; ?>
             </td>
@@ -88,13 +115,24 @@ $stmt = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
   </section>
 
   <script>
-    document.getElementById('filterType').addEventListener('change', e => {
-      const type = e.target.value;
+    const filterStatus = document.getElementById('filterType');
+    const filterPayment = document.getElementById('filterPayment');
+
+    function filterOrders() {
+      const status = filterStatus.value;
+      const payment = filterPayment.value;
+
       document.querySelectorAll('#orderTable tr').forEach(row => {
-        const status = row.dataset.status;
-        row.style.display = (type === 'all' || status === type) ? '' : 'none';
+        const rowStatus = row.dataset.status;
+        const rowPayment = row.dataset.payment;
+        const statusMatch = status === 'all' || rowStatus === status;
+        const paymentMatch = payment === 'all' || rowPayment === payment;
+        row.style.display = statusMatch && paymentMatch ? '' : 'none';
       });
-    });
+    }
+
+    filterStatus.addEventListener('change', filterOrders);
+    filterPayment.addEventListener('change', filterOrders);
   </script>
 </body>
 </html>
