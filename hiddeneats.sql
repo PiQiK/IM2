@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 15, 2025 at 04:01 AM
+-- Generation Time: Jul 16, 2025 at 01:40 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -28,10 +28,21 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `menu` (
-  `foodId` int(11) NOT NULL,
+  `food_id` int(11) NOT NULL,
   `foodName` varchar(255) NOT NULL,
-  `price` int(11) NOT NULL
+  `price` int(11) NOT NULL,
+  `image_url` varchar(255) NOT NULL,
+  `food_category` varchar(255) NOT NULL DEFAULT 'General'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `menu`
+--
+
+INSERT INTO `menu` (`food_id`, `foodName`, `price`, `image_url`, `food_category`) VALUES
+(1, 'Beef Pares', 99, '', 'Specialties'),
+(2, 'Grilled Pork Curry', 139, '', 'Side Orders'),
+(3, 'Fried Siomai Meal', 60, '', 'Budget Bowls');
 
 -- --------------------------------------------------------
 
@@ -40,12 +51,20 @@ CREATE TABLE `menu` (
 --
 
 CREATE TABLE `users` (
-  `userId` int(11) NOT NULL,
-  `firstName` varchar(255) NOT NULL,
-  `lastName` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL
+  `user_id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `is_admin` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`user_id`, `username`, `password`, `is_admin`) VALUES
+(15, 'tester', '$2y$10$PV4mOy0TWQITvss5Ri5.Tu525tfk975pzSZv3jDW10WBbYPtbV/zi', 1),
+(16, 'user1', '$2y$10$Hu0yWycAKgp46ZUlKBU14uI0PFhIXh7NL.hV3wtgJSeWsrvdWDveq', 0),
+(17, 'test', '$2y$10$ekQ42YxISfc.qoIHoBhPL.GOgWkauIBDQk7fqnIsFkqEQEGi.RU8W', 0);
 
 --
 -- Indexes for dumped tables
@@ -55,16 +74,14 @@ CREATE TABLE `users` (
 -- Indexes for table `menu`
 --
 ALTER TABLE `menu`
-  ADD PRIMARY KEY (`foodId`);
+  ADD PRIMARY KEY (`food_id`);
 
 --
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`userId`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `email_2` (`email`) USING BTREE,
-  ADD UNIQUE KEY `email_3` (`email`);
+  ADD PRIMARY KEY (`user_id`),
+  ADD UNIQUE KEY `username` (`username`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -74,18 +91,15 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `menu`
 --
 ALTER TABLE `menu`
-  MODIFY `foodId` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `userId` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
-
-
