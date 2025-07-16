@@ -2,6 +2,7 @@
 include 'connect.php';
 
 $order_id = $_GET['order_id'] ?? 0;
+
 if (!$order_id || !is_numeric($order_id)) {
     echo "Invalid Order ID.";
     exit();
@@ -24,28 +25,34 @@ $items = json_decode($order['order_items'], true);
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
   <title>Order Confirmation</title>
-  <link rel="stylesheet" href="CSS/confirm.css">
+  <link rel="stylesheet" href="CSS/confirm.css" />
 </head>
 <body>
-  <h1>✅ Order Placed!</h1>
-  <p>Thank you, <strong><?= htmlspecialchars($order['customer_name']) ?></strong>!</p>
-  <p><strong>Order ID:</strong> #<?= $order['order_id'] ?></p>
-  <p><strong>Order Type:</strong> <?= htmlspecialchars($order['order_type']) ?></p>
-  <p><strong>Payment Method:</strong> <?= htmlspecialchars($order['payment_method']) ?></p>
+  <div class="confirmation-wrapper">
+    <div class="confirmation-box">
+      <h1>✅ Order Confirmed</h1>
+      <p class="order-id">Order ID: #<?= $order['order_id'] ?></p>
+      <p class="customer">Customer: <?= htmlspecialchars($order['customer_name']) ?></p>
+      <p class="details">Order Type: <?= $order['order_type'] ?></p>
+      <p class="details">Payment: <?= $order['payment_method'] ?> (<?= $order['payment_status'] ?>)</p>
 
+      <ul class="item-list">
+        <?php foreach ($items as $item): ?>
+          <li>
+            <span><?= htmlspecialchars($item['name']) ?> x<?= $item['qty'] ?></span>
+            <span>₱<?= number_format($item['price'] * $item['qty'], 2) ?></span>
+          </li>
+        <?php endforeach; ?>
+      </ul>
 
-  <ul>
-    <?php foreach ($items as $item): ?>
-      <li>
-        <?= htmlspecialchars($item['name']) ?> x<?= $item['qty'] ?> — ₱<?= number_format($item['price'] * $item['qty'], 2) ?>
-      </li>
-    <?php endforeach; ?>
-  </ul>
+      <p class="total">Total: ₱<?= number_format($order['total_price'], 2) ?></p>
+      <p class="status">Status: <?= $order['order_status'] ?></p>
 
-  <p><strong>Total:</strong> ₱<?= number_format($order['total_price'], 2) ?></p>
-  <p><strong>Status:</strong> <?= htmlspecialchars($order['order_status']) ?></p>
+      <a href="LoggedIn.php" class="back-btn">← Back to Menu</a>
+    </div>
+  </div>
 </body>
+
 </html>

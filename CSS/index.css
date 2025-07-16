@@ -53,10 +53,6 @@ form {
   color: #aaa;
 }
 
-.input-group label {
-  display: none;
-}
-
 .btn {
   display: block;
   width: 100%;
@@ -90,4 +86,15 @@ form {
 
 .links button:hover {
   color: #0056b3;
+}
+
+.recover {
+  font-size: 0.85rem;
+  text-align: right;
+  margin-bottom: 1rem;
+}
+
+.recover a {
+  color: #007bff;
+  text-decoration: none;
 }

@@ -7,69 +7,53 @@ if (empty($_SESSION['user_id']) || empty($_SESSION['is_admin'])) {
     exit();
 }
 
-// Update order status
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['complete_order_id'])) {
-        $id = intval($_POST['complete_order_id']);
-        $stmt = $conn->prepare("UPDATE orders SET order_status = 'Completed' WHERE order_id = ?");
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-    } elseif (isset($_POST['mark_paid_order_id'])) {
-        $id = intval($_POST['mark_paid_order_id']);
-        $stmt = $conn->prepare("UPDATE orders SET payment_status = 'Paid' WHERE order_id = ?");
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-    }
-}
-
-$stmt = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
+$result = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
   <link rel="stylesheet" href="CSS/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <header class="admin-header">
-    <h1>🛠 HiddenEats Admin Panel</h1>
-    <div class="admin-controls">
-      <label for="filterType">Filter Orders:</label>
-      <select id="filterType">
-        <option value="all">All</option>
-        <option value="Pending">Pending</option>
-        <option value="Completed">Completed</option>
-      </select>
-
-      <label for="filterPayment">Payment Status:</label>
-      <select id="filterPayment">
-        <option value="all">All</option>
-        <option value="Paid">Paid</option>
-        <option value="Unpaid">Unpaid</option>
-      </select>
+    <h1>🛠 Hidden Eats – Admin Panel</h1>
+    <div class="filters">
+      <label>Order Status:
+        <select id="statusFilter">
+          <option value="all">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </label>
+      <label>Payment Status:
+        <select id="paymentFilter">
+          <option value="all">All</option>
+          <option value="Unpaid">Unpaid</option>
+          <option value="Paid">Paid</option>
+        </select>
+      </label>
     </div>
   </header>
 
   <section class="admin-table-container">
-    <table class="admin-table">
+    <table class="admin-table" id="orderTable">
       <thead>
         <tr>
-          <th>Order ID</th>
-          <th>Username</th>
+          <th>ID</th>
+          <th>Customer</th>
           <th>Items</th>
           <th>Total</th>
           <th>Type</th>
-          <th>Payment</th>
           <th>Status</th>
-          <th>Paid?</th>
+          <th>Payment</th>
           <th>Action</th>
         </tr>
       </thead>
-      <tbody id="orderTable">
-        <?php while ($row = $stmt->fetch_assoc()): ?>
+      <tbody>
+        <?php while ($row = $result->fetch_assoc()): ?>
           <tr data-status="<?= $row['order_status'] ?>" data-payment="<?= $row['payment_status'] ?>">
             <td><?= $row['order_id'] ?></td>
             <td><?= htmlspecialchars($row['customer_name']) ?></td>
@@ -82,30 +66,29 @@ $stmt = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
             </td>
             <td>₱<?= number_format($row['total_price'], 2) ?></td>
             <td><?= $row['order_type'] ?></td>
-            <td><?= htmlspecialchars($row['payment_method']) ?></td>
             <td>
-              <span class="<?= $row['order_status'] === 'Completed' ? 'status-completed' : 'status-pending' ?>">
-                <?= $row['order_status'] ?>
-              </span>
+              <span class="status <?= strtolower($row['order_status']) ?>"><?= $row['order_status'] ?></span>
             </td>
             <td>
-              <span class="<?= $row['payment_status'] === 'Paid' ? 'status-completed' : 'status-pending' ?>">
-                <?= $row['payment_status'] ?>
-              </span>
-            </td>
+  <span class="payment <?= strtolower($row['payment_status']) ?>">
+    <?= $row['payment_method'] ?> – <?= $row['payment_status'] ?>
+  </span>
+  <?php if ($row['payment_status'] !== 'Paid'): ?>
+    <form method="POST" action="status_update.php" style="margin-top: 6px;">
+      <input type="hidden" name="payment_id" value="<?= $row['order_id'] ?>">
+      <button class="mark-paid-btn">Mark as Paid</button>
+    </form>
+  <?php endif; ?>
+</td>
+
             <td>
               <?php if ($row['order_status'] !== 'Completed'): ?>
-              <form method="POST" action="admin.php" style="margin-bottom: 0.3rem;">
-                <input type="hidden" name="complete_order_id" value="<?= $row['order_id'] ?>">
-                <button type="submit" class="complete-btn">Mark Completed</button>
-              </form>
-              <?php endif; ?>
-
-              <?php if ($row['payment_status'] !== 'Paid'): ?>
-              <form method="POST" action="admin.php">
-                <input type="hidden" name="mark_paid_order_id" value="<?= $row['order_id'] ?>">
-                <button type="submit" class="complete-btn" style="background-color:#28a745;">Mark Paid</button>
-              </form>
+                <form method="POST" action="status_update.php">
+                  <input type="hidden" name="order_id" value="<?= $row['order_id'] ?>">
+                  <button class="complete-btn">Mark Completed</button>
+                </form>
+              <?php else: ?>
+                —
               <?php endif; ?>
             </td>
           </tr>
@@ -115,24 +98,25 @@ $stmt = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
   </section>
 
   <script>
-    const filterStatus = document.getElementById('filterType');
-    const filterPayment = document.getElementById('filterPayment');
+    const statusFilter = document.getElementById('statusFilter');
+    const paymentFilter = document.getElementById('paymentFilter');
+    const rows = document.querySelectorAll('#orderTable tbody tr');
 
     function filterOrders() {
-      const status = filterStatus.value;
-      const payment = filterPayment.value;
+      const status = statusFilter.value.toLowerCase();
+      const payment = paymentFilter.value.toLowerCase();
 
-      document.querySelectorAll('#orderTable tr').forEach(row => {
-        const rowStatus = row.dataset.status;
-        const rowPayment = row.dataset.payment;
-        const statusMatch = status === 'all' || rowStatus === status;
-        const paymentMatch = payment === 'all' || rowPayment === payment;
+      rows.forEach(row => {
+        const rowStatus = row.dataset.status.toLowerCase();
+        const rowPayment = row.dataset.payment.toLowerCase();
+        const statusMatch = (status === 'all' || rowStatus === status);
+        const paymentMatch = (payment === 'all' || rowPayment === payment);
         row.style.display = statusMatch && paymentMatch ? '' : 'none';
       });
     }
 
-    filterStatus.addEventListener('change', filterOrders);
-    filterPayment.addEventListener('change', filterOrders);
+    statusFilter.addEventListener('change', filterOrders);
+    paymentFilter.addEventListener('change', filterOrders);
   </script>
 </body>
 </html>
