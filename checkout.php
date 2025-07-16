@@ -35,6 +35,14 @@ $data = json_decode($input, true);
 
 $cart = $data['cart'] ?? [];
 $orderType = $data['order_type'] ?? '';
+$paymentMethod = $data['payment_method'] ?? 'Cash';
+$validMethods = ['Cash', 'GCash'];
+
+if (!in_array($paymentMethod, $validMethods)) {
+    echo json_encode(['success' => false, 'error' => 'Invalid payment method']);
+    exit();
+}
+
 
 if (!is_array($cart) || empty($cart)) {
     echo json_encode(['success' => false, 'error' => 'Cart is empty or invalid']);
@@ -56,8 +64,10 @@ foreach ($cart as $item) {
 }
 
 $orderJSON = json_encode($cart);
-$stmt = $conn->prepare("INSERT INTO orders (customer_name, order_items, total_price, order_type) VALUES (?, ?, ?, ?)");
-$stmt->bind_param("ssds", $username, $orderJSON, $total, $orderType);
+$stmt = $conn->prepare("INSERT INTO orders (customer_name, order_items, total_price, order_type, payment_method)
+                        VALUES (?, ?, ?, ?, ?)");
+$stmt->bind_param("ssdss", $username, $orderJSON, $total, $orderType, $paymentMethod);
+
 
 if ($stmt->execute()) {
     echo json_encode(['success' => true, 'order_id' => $stmt->insert_id]);

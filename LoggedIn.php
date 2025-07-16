@@ -79,6 +79,13 @@ $username = htmlspecialchars($user['username']);
         <option value="Take Out">Take Out</option>
       </select>
     </label>
+    <label for="payment-method">Payment Method:
+  <select id="payment-method">
+    <option value="Cash">Cash</option>
+    <option value="GCash">GCash</option>
+    <option value="Maya">Maya</option>
+  </select>
+</label>
     <button class="checkout-btn">Checkout</button>
   </div>
 

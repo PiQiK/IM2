@@ -34,6 +34,8 @@ $items = json_decode($order['order_items'], true);
   <p>Thank you, <strong><?= htmlspecialchars($order['customer_name']) ?></strong>!</p>
   <p><strong>Order ID:</strong> #<?= $order['order_id'] ?></p>
   <p><strong>Order Type:</strong> <?= htmlspecialchars($order['order_type']) ?></p>
+  <p><strong>Payment Method:</strong> <?= htmlspecialchars($order['payment_method']) ?></p>
+
 
   <ul>
     <?php foreach ($items as $item): ?>

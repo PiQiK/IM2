@@ -77,10 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const orderType = document.getElementById('order-type').value;
 
     fetch('checkout.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cart, order_type: orderType })
-    })
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    cart,
+    order_type: document.getElementById('order-type').value,
+    payment_method: document.getElementById('payment-method').value
+  })
+})
     .then(res => res.json())
     .then(data => {
       if (data.success && data.order_id) {

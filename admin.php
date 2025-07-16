@@ -48,6 +48,7 @@ $stmt = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
           <th>Items</th>
           <th>Total</th>
           <th>Type</th>
+          <th>Payment</th>
           <th>Status</th>
           <th>Action</th>
         </tr>
@@ -66,6 +67,7 @@ $stmt = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
             </td>
             <td>₱<?= number_format($row['total_price'], 2) ?></td>
             <td><?= $row['order_type'] ?></td>
+            <td><?= htmlspecialchars($row['payment_method']) ?></td>
             <td>
               <span class="<?= $row['order_status'] === 'Completed' ? 'status-completed' : 'status-pending' ?>">
                 <?= $row['order_status'] ?>
