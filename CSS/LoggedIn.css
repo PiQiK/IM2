@@ -394,3 +394,36 @@ body {
 .admin-dashboard-btn:hover {
   background-color: #212529;
 }
+
+/* Toggle cart button */
+.toggle-cart-btn {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.7rem 1rem;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  cursor: pointer;
+  z-index: 1500;
+  font-size: 1.2rem;
+  transition: background-color 0.3s;
+}
+
+.toggle-cart-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Cart sidebar transition */
+.cart-sidebar {
+  transition: transform 0.3s ease;
+}
+
+/* Hidden cart (slide out) */
+.cart-hidden {
+  transform: translateX(110%);
+}
+

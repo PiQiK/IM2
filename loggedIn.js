@@ -6,6 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const totalEl = document.getElementById('cart-total');
   const checkoutBtn = document.querySelector('.checkout-btn');
   const clearCartBtn = document.getElementById('clear-cart-btn');
+  const cartSidebar = document.querySelector('.cart-sidebar');
+  const toggleCartBtn = document.getElementById('toggleCartBtn');
+
+  toggleCartBtn.addEventListener('click', () => {
+  cartSidebar.classList.toggle('cart-hidden');
+});
   
   // Filter buttons
   filterBtns.forEach(b => b.addEventListener('click', () => {

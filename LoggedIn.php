@@ -57,6 +57,8 @@ while ($r = $catQ->fetch_assoc()) {
       <?php endforeach; ?>
     <?php endforeach; ?>
   </main>
+      
+  <button id="toggleCartBtn" class="toggle-cart-btn">🛒</button>
 
   <aside class="cart-sidebar">
     <h2>🛒 Your Cart</h2>
