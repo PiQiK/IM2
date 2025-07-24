@@ -1,6 +1,11 @@
 <?php
 include 'connect.php';
 
+// Error reporting (for debugging, you can remove in production)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Apply filters
 $where = [];
 $params = [];
 $types = '';
@@ -37,7 +42,7 @@ $result = $stmt->get_result();
 ob_start();
 while ($row = $result->fetch_assoc()):
 ?>
-<tr data-status="<?= $row['order_status'] ?>" data-payment="<?= $row['payment_status'] ?>">
+<tr data-status="<?= htmlspecialchars($row['order_status']) ?>" data-payment="<?= htmlspecialchars($row['payment_status']) ?>">
   <td><?= $row['order_id'] ?></td>
   <td><?= htmlspecialchars($row['customer_name']) ?></td>
   <td>
@@ -48,21 +53,28 @@ while ($row = $result->fetch_assoc()):
     </ul>
   </td>
   <td>₱<?= number_format($row['total_price'], 2) ?></td>
-  <td><?= $row['order_type'] ?></td>
+  <td><?= htmlspecialchars($row['order_type']) ?></td>
   <td>
     <span class="status <?= strtolower($row['order_status']) ?>"><?= $row['order_status'] ?></span>
-  </td>
-  <td><?= $row['payment_method'] ?> - <?= $row['payment_status'] ?></td>
-  <td>
     <?php if ($row['order_status'] !== 'Completed'): ?>
-      <form method="POST" action="status_update.php">
+      <form method="POST" action="status_update.php" style="margin-top: 6px;">
         <input type="hidden" name="order_id" value="<?= $row['order_id'] ?>">
         <button class="complete-btn">Mark Completed</button>
       </form>
-    <?php else: ?>
-      —
     <?php endif; ?>
   </td>
+  <td>
+    <span class="payment <?= strtolower($row['payment_status']) ?>">
+      <?= htmlspecialchars($row['payment_method']) ?> – <?= $row['payment_status'] ?>
+    </span>
+    <?php if ($row['payment_status'] !== 'Paid'): ?>
+      <form method="POST" action="status_update.php" style="margin-top: 6px;">
+        <input type="hidden" name="payment_id" value="<?= $row['order_id'] ?>">
+        <button class="mark-paid-btn">Mark as Paid</button>
+      </form>
+    <?php endif; ?>
+  </td>
+  <td>—</td>
 </tr>
 <?php endwhile;
 

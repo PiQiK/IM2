@@ -156,3 +156,100 @@ h1 {
   border: 1px solid #ccc;
   font-size: 0.95rem;
 }
+
+.logout-btn {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background-color: #dc3545;
+  color: white;
+  padding: 0.6rem 1rem;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  z-index: 2000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.logout-btn:hover {
+  background-color: #c82333;
+}
+
+/* Smaller screens: reduce size and show icon only */
+@media (max-width: 768px) {
+  .logout-btn {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .logout-btn span {
+    display: none;
+  }
+}
+
+.logout-btn {
+  position: fixed;
+  bottom: 1.2rem;
+  right: 1.2rem;
+  background: linear-gradient(135deg, #ff5e62, #ff9966);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #ff3e46, #ff774a);
+}
+
+@media (max-width: 768px) {
+  .logout-btn {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    border-radius: 40px;
+  }
+
+  .logout-btn span {
+    display: none; /* Icon-only on mobile */
+  }
+}
+
+.kiosk-btn {
+  background: linear-gradient(135deg, #28a745, #45c46b);
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.kiosk-btn:hover {
+  background: linear-gradient(135deg, #218838, #3bb25e);
+  transform: translateY(-2px);
+}
+.refresh-status {
+  display: inline-block;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
